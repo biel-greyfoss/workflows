@@ -28,18 +28,17 @@ jobs:
           VERSION=bieldatalab/${{ inputs.image_name }}:release-$(echo "${{ github.event.review.body }}"  | sed "s/.*release-\([^ ]*\).*$/\1/")
           echo VERSION=$VERSION
           echo "::set-output name=version::$VERSION"
-      - name: Modify Yaml Tag
+      - name: Modify Deployment Yaml Tag
         uses: mikefarah/yq@master
         with:
-          cmd: >-
-            if echo ${{ inputs.has_jobs }} | grep -c "true"
-            then
-              yq eval -i '.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/deployment.yaml' && 
-              yq eval -i '.spec.jobTemplate.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/jobs.yaml' 
-            else
-              yq eval -i '.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/deployment.yaml'
-            fi
-
+          cmd: 
+            yq eval -i '.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/deployment.yaml' 
+      - name: Modify Jobs Yaml Tag
+        if: ${{ inputs.has_jobs }}
+        uses: mikefarah/yq@master
+        with:
+          cmd:
+            yq eval -i '.spec.jobTemplate.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/jobs.yaml' 
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v7
