@@ -3,8 +3,15 @@ on:
   workflow_call:
      inputs:
        image_name:
+         description: "the image name of the caller's workflow, under the bieldatalab username"
          required: true
          type: string
+       has_jobs:
+         description: "has the jobs.yaml or not"
+         default: false
+         required: false
+         type: boolean
+         
 
 jobs:
   add_tag:
@@ -25,8 +32,10 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: >-
-            yq eval -i '.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/deployment.yaml' &&
-            yq eval -i '.spec.jobTemplate.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/jobs.yaml'
+            yq eval -i '.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/deployment.yaml' 
+            if [-z "${{ inpupts.has_jobs }}" ] then
+              && yq eval -i '.spec.jobTemplate.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/jobs.yaml'
+            fi
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v7
