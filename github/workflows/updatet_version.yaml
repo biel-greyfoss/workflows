@@ -1,0 +1,37 @@
+name: Update release pipeline
+on:
+  workflow_call:
+     inputs:
+       image_name:
+         required: true
+         type: string
+
+jobs:
+  add_tag:
+    if: ${{ contains(github.event.review.body, 'release-') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.4.0
+        with:
+          fetch-depth: 0
+          ref: ${{github.event.pull_request.head.ref}}
+      - name: Extract Version
+        id: image
+        run: |
+          VERSION=bieldatalab/${{ inputs.image_name}}:release-$(echo "${{ github.event.review.body }}"  | sed "s/.*release-\([^ ]*\).*$/\1/")
+          echo VERSION=$VERSION
+          echo "::set-output name=version::$VERSION"
+      - name: Modify Yaml Tag
+        uses: mikefarah/yq@master
+        with:
+          cmd: >-
+            yq eval -i '.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/deployment.yaml' &&
+            yq eval -i '.spec.jobTemplate.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/jobs.yaml'
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v7
+        with:
+          author_name: datalab-devops
+          author_email: datalab@bielcrystal.com
+          message: "Update image tag to ${{ steps.image.outputs.version }}"
+          add: "*.yaml"
