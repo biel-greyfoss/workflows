@@ -32,8 +32,7 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: >-
-            yq eval -i '.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/deployment.yaml' 
-            [[ "${{ inputs.has_jobs }}" = true ]] && yq eval -i '.spec.jobTemplate.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/jobs.yaml' || true
+            yq eval -i '.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/deployment.yaml'  [[ "${{ inputs.has_jobs }}" = true ]] && yq eval -i '.spec.jobTemplate.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/jobs.yaml' || true
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v7
