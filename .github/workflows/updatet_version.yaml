@@ -32,9 +32,9 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: >-
-            yq eval -i '.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/deployment.yaml' 
+            yq eval -i '.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/deployment.yaml' &&
             if [-z "${{ inputs.has_jobs }}" ] then
-              && yq eval -i '.spec.jobTemplate.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/jobs.yaml'
+              yq eval -i '.spec.jobTemplate.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/jobs.yaml'
             fi
 
       - name: Commit changes
