@@ -33,7 +33,7 @@ jobs:
         with:
           cmd: >-
             yq eval -i '.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/deployment.yaml' 
-            if [-z "${{ inpupts.has_jobs }}" ] then
+            if [-z "${{ inputs.has_jobs }}" ] then
               && yq eval -i '.spec.jobTemplate.spec.template.spec.containers[0].image="${{ steps.image.outputs.version }}"'  'deployment/jobs.yaml'
             fi
 
